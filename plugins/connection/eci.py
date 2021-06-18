@@ -425,7 +425,7 @@ class Connection(ssh.Connection):
         client = boto3.client('ec2', **self._get_boto_args())
         lookup_address = self._play_context.remote_addr
         display.vvv("NO INSTANCE_ID PROVIDED, ATTEMPTING LOOKUP")
-        for filter_name in ('ip-address', 'private-ip-address', 'private-dns-name'):
+        for filter_name in ('private-ip-address', 'ip-address', 'private-dns-name'):
           filter = [{'Name': filter_name,'Values': [lookup_address ]}]
           response = client.describe_instances(Filters=filter)
           for r in response['Reservations']:
