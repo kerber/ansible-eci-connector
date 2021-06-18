@@ -418,6 +418,7 @@ class Connection(ssh.Connection):
 
     def _get_eci_args(self):
       ##TODO Make this cleaner, build once then always return
+      resultCount = 0
       if(not hasattr(self, '_instance_id') and self.get_option('instance_id')):
         self._instance_id = self.get_option('instance_id')
       else:
@@ -429,14 +430,19 @@ class Connection(ssh.Connection):
           response = client.describe_instances(Filters=filter)
           for r in response['Reservations']:
             for i in r['Instances']:
+              resultCount += 1
               self._instance_id = i['InstanceId']
               self._availability_zone = i['Placement']['AvailabilityZone']
+              display.vvv("Instance found with given identifier. INSTANCE_ID: {0}".format(self._instance_id))
           ##We've found it, so stop
           if(hasattr(self, '_instance_id')):
             break
 
       if(not hasattr(self, '_instance_id')):
         raise Exception('No instance_id found')
+
+      if(resultCount > 1):
+        raise Exception('Multiple matching instances found. Please add ansible_instance_id to inventory host.')
 
       if(not hasattr(self, '_availability_zone')):
         client = boto3.client('ec2', **self._get_boto_args())
